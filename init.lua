@@ -1,4 +1,4 @@
---[[
+--[[ini
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -109,6 +109,12 @@ vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
+
+-- Set tab to be 2 spaces
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 2
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -229,14 +235,44 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+
+  --  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
+
+  -- Open and edit .ipynb files with NeoVim.
+  -- Find setup option here: https://github.com/meatballs/notebook.nvim
+  {
+    'meatballs/notebook.nvim',
+    config = function()
+      require('notebook').setup()
+    end,
+  },
+
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^5', -- Recommended
+    ft = { 'rust' },
+    opts = {
+      server = {
+        default_settings = {
+          ['rust-analyzer'] = {
+            checkOnSave = { allTargets = false },
+            formatOnSave = { enable = true },
+            -- cargo = { unSetTest = false },
+          },
+        },
+      },
+    },
+    config = function(_, opts)
+      vim.g.rustaceanvim = vim.tbl_deep_extend('keep', vim.g.rustaceanvim or {}, opts or {})
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -607,16 +643,31 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
+        pyright = {},
+        ruff = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
+        -- Some languages (like typescript) have entire language plugins that can be useful: sf
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
         --
+        texlab = {
+          settings = {
+            texlab = {
+              bibtexFormatter = 'texlab',
+              build = {
+                args = { '-pdf', '-interaction=nonstopmode', '-synctex=1', '%f' },
+                executable = 'latexmk',
+                forwardSearchAfter = false,
+                onSave = true,
+              },
+            },
+          },
+        },
+        -- ocamllsp = {},
+        ocamlformat = {},
 
         lua_ls = {
           -- cmd = {...},
@@ -700,7 +751,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -835,7 +886,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'tokyonight-storm'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
